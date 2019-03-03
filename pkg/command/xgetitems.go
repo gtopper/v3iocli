@@ -4,10 +4,12 @@ package command
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/valyala/fasthttp"
 	"net/url"
+	"os"
 	"path"
 )
 
@@ -47,10 +49,17 @@ func newGetItemsCommandeer(rootCommandeer *RootCommandeer) *GetItemsCommandeer {
 		Short: "Read v3io tables",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 || args[0] == "" {
-				return errors.New("path must not be empty")
+				return errors.New("path must be specified")
 			}
 			commandeer.path = args[0]
-			return commandeer.execute()
+			err := commandeer.execute()
+			if err != nil {
+				if _, ok := err.(printUsageError); ok {
+					return err
+				}
+				_, _ = fmt.Fprintln(os.Stderr, err)
+			}
+			return nil
 		},
 	}
 
@@ -64,7 +73,10 @@ func newGetItemsCommandeer(rootCommandeer *RootCommandeer) *GetItemsCommandeer {
 }
 
 func (g *GetItemsCommandeer) execute() error {
-	g.rootCommandeer.init()
+	err := g.rootCommandeer.verify()
+	if err != nil {
+		return printUsageError(err)
+	}
 
 	targetUrl, err := g.buildUrl()
 	g.targetUrl = targetUrl.String()
@@ -128,7 +140,7 @@ func (g *GetItemsCommandeer) makeRequest(marker string) (*getItemsResponse, erro
 	defer fasthttp.ReleaseResponse(resp)
 	err = fasthttp.Do(req, resp)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to send request")
 	}
 	if resp.StatusCode() != 200 {
 		body := string(resp.Body())

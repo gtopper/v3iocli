@@ -2,15 +2,18 @@ package command
 
 import (
 	"encoding/base64"
+	"errors"
 	"github.com/spf13/cobra"
 	"net/url"
 	"os"
 	"strings"
 )
 
+type printUsageError error
+
 type RootCommandeer struct {
 	cmd           *cobra.Command
-	v3ioPath      string
+	server        string
 	user          string
 	password      string
 	token         string
@@ -19,9 +22,8 @@ type RootCommandeer struct {
 
 func NewRootCommandeer() *RootCommandeer {
 	cmd := &cobra.Command{
-		Use:          "v3iocli [command] [arguments] [flags]",
-		Short:        "V3IO command-line interface",
-		SilenceUsage: true,
+		Use:   "v3iocli [command] [arguments] [flags]",
+		Short: "V3IO command-line interface",
 	}
 
 	commandeer := &RootCommandeer{
@@ -30,7 +32,7 @@ func NewRootCommandeer() *RootCommandeer {
 
 	defaultV3ioServer := os.Getenv("V3IO_API")
 
-	cmd.PersistentFlags().StringVarP(&commandeer.v3ioPath, "server", "s", defaultV3ioServer, "V3IO API address")
+	cmd.PersistentFlags().StringVarP(&commandeer.server, "server", "s", defaultV3ioServer, "V3IO API address")
 	cmd.PersistentFlags().StringVarP(&commandeer.user, "user", "u", "", "user name")
 	cmd.PersistentFlags().StringVarP(&commandeer.password, "password", "p", "", "password")
 	cmd.PersistentFlags().StringVarP(&commandeer.token, "token", "t", "", "V3IO access key (session token)")
@@ -46,9 +48,9 @@ func (r *RootCommandeer) Execute() error {
 	return r.cmd.Execute()
 }
 
-// Parse v3ioPath as a URL if it starts with an http or https protocol. Otherwise, assume no protocol is provided and use http.
+// Parse server as a URL if it starts with an http or https protocol. Otherwise, assume no protocol is provided and use http.
 func (r *RootCommandeer) buildUrl() (*url.URL, error) {
-	sanitizedPath := r.v3ioPath
+	sanitizedPath := r.server
 	if !strings.HasPrefix(sanitizedPath, "http://") && !strings.HasPrefix(sanitizedPath, "https://") {
 		sanitizedPath = "http://" + sanitizedPath
 	}
@@ -67,4 +69,12 @@ func (r *RootCommandeer) init() {
 	}
 	r.authorization = "Basic " + base64.StdEncoding.EncodeToString([]byte(r.user+":"+r.password))
 	r.password = ""
+}
+
+func (r *RootCommandeer) verify() error {
+	r.init()
+	if r.server == "" {
+		return errors.New("please specify --server or define V3IO_API")
+	}
+	return nil
 }
