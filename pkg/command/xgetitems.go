@@ -102,8 +102,11 @@ func (g *GetItemsCommandeer) makeRequest(marker string) (*getItemsResponse, erro
 	defer fasthttp.ReleaseRequest(req)
 	req.SetRequestURI(g.targetUrl)
 	req.Header.SetMethod("PUT")
-	var authorization = g.rootCommandeer.authorization
-	req.Header.Set("Authorization", authorization)
+	if g.rootCommandeer.token == "" {
+		req.Header.Set("Authorization", g.rootCommandeer.authorization)
+	} else {
+		req.Header.Set("X-v3io-session-key", g.rootCommandeer.token)
+	}
 	req.Header.Set("X-v3io-function", "GetItems")
 	getItemsReq := getItemsRequest{Marker: marker}
 	reqBody, err := json.Marshal(getItemsReq)
@@ -120,7 +123,7 @@ func (g *GetItemsCommandeer) makeRequest(marker string) (*getItemsResponse, erro
 	if resp.StatusCode() != 200 {
 		body := string(resp.Body())
 		if body != "" {
-			body = " (message: " + body + ")"
+			body = ": \n" + body + "\n"
 		}
 		return nil, errors.Errorf("got unexpected response code %d from %s%s", resp.StatusCode(), g.targetUrl, body)
 	}
