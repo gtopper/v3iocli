@@ -43,7 +43,7 @@ func newGetItemsCommandeer(rootCommandeer *RootCommandeer) *GetItemsCommandeer {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "getitems",
+		Use:   "getitems <path>",
 		Short: "Read v3io tables",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 || args[0] == "" {
