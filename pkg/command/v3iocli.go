@@ -60,6 +60,11 @@ func (r *RootCommandeer) buildUrl() (*url.URL, error) {
 }
 
 func (r *RootCommandeer) init() {
+	if r.token == "" && r.password == "" { // Only use env if no credentials are provided as CLI options.
+		r.token = os.Getenv("V3IO_ACCESS_KEY")
+		r.user = os.Getenv("V3IO_USERNAME")
+		r.password = os.Getenv("V3IO_PASSWORD")
+	}
 	r.authorization = "Basic " + base64.StdEncoding.EncodeToString([]byte(r.user+":"+r.password))
 	r.password = ""
 }
