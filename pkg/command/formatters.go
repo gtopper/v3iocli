@@ -55,13 +55,18 @@ func (w *csvItemWritter) Write(item Item) error {
 
 func extractSortedAttrNames(item Item) []string {
 	var sortedAttrNames []string
-	for attrName, _ := range item {
-		if attrName != "__name" {
+	var namePresent bool
+	for attrName := range item {
+		if attrName == "__name" {
+			namePresent = true
+		} else {
 			sortedAttrNames = append(sortedAttrNames, attrName)
 		}
 	}
 	sort.Strings(sortedAttrNames)
-	sortedAttrNames = append([]string{"__name"}, sortedAttrNames...)
+	if namePresent {
+		sortedAttrNames = append([]string{"__name"}, sortedAttrNames...)
+	}
 	return sortedAttrNames
 }
 

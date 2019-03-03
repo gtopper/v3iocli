@@ -17,10 +17,14 @@ type GetItemsCommandeer struct {
 	path           string
 	targetUrl      string
 	format         string
+	attributes     string
+	filter         string
 }
 
 type getItemsRequest struct {
-	Marker string `json:"Marker,omitempty"`
+	Marker           string `json:"Marker,omitempty"`
+	AttributesToGet  string `json:"AttributesToGet,omitempty"`
+	FilterExpression string `json:"FilterExpression,omitempty"`
 }
 
 type getItemsResponse struct {
@@ -51,6 +55,8 @@ func newGetItemsCommandeer(rootCommandeer *RootCommandeer) *GetItemsCommandeer {
 	}
 
 	cmd.PersistentFlags().StringVarP(&commandeer.format, "output", "o", "json", "Output format")
+	cmd.PersistentFlags().StringVarP(&commandeer.attributes, "attributes", "a", "", "Attributes to request")
+	cmd.PersistentFlags().StringVarP(&commandeer.filter, "filter", "f", "", "Filter expression")
 
 	commandeer.cmd = cmd
 
@@ -108,7 +114,11 @@ func (g *GetItemsCommandeer) makeRequest(marker string) (*getItemsResponse, erro
 		req.Header.Set("X-v3io-session-key", g.rootCommandeer.token)
 	}
 	req.Header.Set("X-v3io-function", "GetItems")
-	getItemsReq := getItemsRequest{Marker: marker}
+	getItemsReq := getItemsRequest{
+		Marker:           marker,
+		AttributesToGet:  g.attributes,
+		FilterExpression: g.filter,
+	}
 	reqBody, err := json.Marshal(getItemsReq)
 	if err != nil {
 		return nil, err
