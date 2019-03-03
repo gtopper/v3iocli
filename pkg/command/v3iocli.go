@@ -31,8 +31,8 @@ func NewRootCommandeer() *RootCommandeer {
 	defaultV3ioServer := os.Getenv("V3IO_API")
 
 	cmd.PersistentFlags().StringVarP(&commandeer.v3ioPath, "server", "s", defaultV3ioServer, "V3IO API address")
-	cmd.PersistentFlags().StringVarP(&commandeer.user, "user", "u", "", "User name")
-	cmd.PersistentFlags().StringVarP(&commandeer.password, "password", "p", "", "Password")
+	cmd.PersistentFlags().StringVarP(&commandeer.user, "user", "u", "", "user name")
+	cmd.PersistentFlags().StringVarP(&commandeer.password, "password", "p", "", "password")
 	cmd.PersistentFlags().StringVarP(&commandeer.token, "token", "t", "", "V3IO access key (session token)")
 
 	cmd.AddCommand(
