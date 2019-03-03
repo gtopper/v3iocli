@@ -62,9 +62,9 @@ func extractSortedAttrNames(item Item) []string {
 	return sortedAttrNames
 }
 
-type IntFromString string
+type NumberFromString string
 
-func (i IntFromString) MarshalJSON() ([]byte, error) {
+func (i NumberFromString) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprint(i)), nil
 }
 
@@ -74,7 +74,7 @@ func (w *jsonItemWritter) Write(item Item) error {
 		var attrValue interface{}
 		for attrType, v := range attr {
 			if attrType == "N" {
-				attrValue = IntFromString(v)
+				attrValue = NumberFromString(v)
 			} else {
 				attrValue = v
 			}
