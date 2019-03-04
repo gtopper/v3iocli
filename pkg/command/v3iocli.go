@@ -9,7 +9,13 @@ import (
 	"strings"
 )
 
-type printUsageError error
+type printUsageError struct {
+	err error
+}
+
+func (p printUsageError) Error() string {
+	return p.err.Error()
+}
 
 type RootCommandeer struct {
 	cmd           *cobra.Command
@@ -39,6 +45,7 @@ func NewRootCommandeer() *RootCommandeer {
 
 	cmd.AddCommand(
 		newGetItemsCommandeer(commandeer).cmd,
+		newPutItemsCommandeer(commandeer).cmd,
 	)
 
 	return commandeer

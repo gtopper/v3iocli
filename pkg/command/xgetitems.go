@@ -75,15 +75,14 @@ func newGetItemsCommandeer(rootCommandeer *RootCommandeer) *GetItemsCommandeer {
 func (g *GetItemsCommandeer) execute() error {
 	err := g.rootCommandeer.verify()
 	if err != nil {
-		return printUsageError(err)
+		return printUsageError{err}
 	}
 
 	targetUrl, err := g.buildUrl()
-	g.targetUrl = targetUrl.String()
-
 	if err != nil {
 		return err
 	}
+	g.targetUrl = targetUrl.String()
 
 	marker := ""
 	var out itemWritter
